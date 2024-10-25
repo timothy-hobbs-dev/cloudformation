@@ -163,7 +163,7 @@ Resources:
   IAMUser5000:
     Type: "AWS::IAM::User"
     Properties:
-      UserName: "User4000"
+      UserName: "User5000"
       Groups:
         - Ref: "EC2GroupWithS3Access"
       LoginProfile:
