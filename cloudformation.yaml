@@ -8,13 +8,13 @@ Parameters:
     Description: Email for User2 stored in Parameter Store
   User720Email:
     Type: String
-    Description: Email for User2 stored in Parameter Store
+    Description: Email for User720 stored in Parameter Store
   User1000Email:
     Type: String
     Description: Email for User1000 stored in Parameter Store
   User3000Email:
     Type: String
-    Description: Email for User1000 stored in Parameter Store
+    Description: Email for User3000 stored in Parameter Store
   User4000Email:
     Type: String
     Description: Email for User4000 stored in Parameter Store
@@ -70,7 +70,7 @@ Resources:
         PasswordLength: 16
         ExcludeCharacters: '"@/\\'
 
-  ## IAM User 1
+  ## IAM Users
   IAMUser1:
     Type: "AWS::IAM::User"
     Properties:
@@ -81,7 +81,6 @@ Resources:
         Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
         PasswordResetRequired: true
 
-  ## IAM User 2
   IAMUser2:
     Type: "AWS::IAM::User"
     Properties:
@@ -92,11 +91,10 @@ Resources:
         Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
         PasswordResetRequired: true
 
-  ## IAM User 3
   IAMUser3:
     Type: "AWS::IAM::User"
     Properties:
-      UserName: "User97"
+      UserName: "User3"
       Groups:
         - Ref: "EC2GroupWithS3Access"
       LoginProfile:
@@ -113,70 +111,10 @@ Resources:
         Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
         PasswordResetRequired: true
 
-  IAMUser5:
-    Type: "AWS::IAM::User"
-    Properties:
-      UserName: "User5"
-      Groups:
-        - Ref: "EC2GroupWithS3Access"
-      LoginProfile:
-        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
-        PasswordResetRequired: true
-
   IAMUser720:
     Type: "AWS::IAM::User"
     Properties:
       UserName: "User720"
-      Groups:
-        - Ref: "EC2GroupWithS3Access"
-      LoginProfile:
-        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
-        PasswordResetRequired: true
-
-  IAMUser1000:
-    Type: "AWS::IAM::User"
-    Properties:
-      UserName: "User1000"
-      Groups:
-        - Ref: "EC2GroupWithS3Access"
-      LoginProfile:
-        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
-        PasswordResetRequired: true
-
-  IAMUser3000:
-    Type: "AWS::IAM::User"
-    Properties:
-      UserName: "User3000"
-      Groups:
-        - Ref: "EC2GroupWithS3Access"
-      LoginProfile:
-        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
-        PasswordResetRequired: true
-
-  IAMUser4000:
-    Type: "AWS::IAM::User"
-    Properties:
-      UserName: "User4000"
-      Groups:
-        - Ref: "EC2GroupWithS3Access"
-      LoginProfile:
-        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
-        PasswordResetRequired: true
-
-  IAMUser5000:
-    Type: "AWS::IAM::User"
-    Properties:
-      UserName: "User5000"
-      Groups:
-        - Ref: "EC2GroupWithS3Access"
-      LoginProfile:
-        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
-        PasswordResetRequired: true
-
-  IAMUser6000:
-    Type: "AWS::IAM::User"
-    Properties:
-      UserName: "User6000"
       Groups:
         - Ref: "EC2GroupWithS3Access"
       LoginProfile:
@@ -198,51 +136,30 @@ Resources:
       Type: "String"
       Value: !Ref "User2Email"
 
-  User720EmailParameter:
-    Type: "AWS::SSM::Parameter"
-    Properties:
-      Name: "User720Email"
-      Type: "String"
-      Value: !Ref "User720Email"
-
-  User3000EmailParameter:
-    Type: "AWS::SSM::Parameter"
-    Properties:
-      Name: "User3000Email"
-      Type: "String"
-      Value: !Ref "User3000Email"
-
-  User5000EmailParameter:
-    Type: "AWS::SSM::Parameter"
-    Properties:
-      Name: "User5000Email"
-      Type: "String"
-      Value: !Ref "User5000Email"
-
   User6000EmailParameter:
     Type: "AWS::SSM::Parameter"
     Properties:
       Name: "User6000Email"
       Type: "String"
-      Value: !Ref "User5000Email"
+      Value: !Ref "User6000Email"
 
   ## EventBridge Rule to detect user creation
   UserCreationEventRule:
-  Type: "AWS::Events::Rule"
-  Properties:
-    EventPattern:
-      source:
-        - "aws.cloudformation"
-      detail-type:
-        - "AWS API Call via CloudTrail"
-      detail:
-        eventSource:
-          - "cloudformation.amazonaws.com"
-        eventName:
-          - "ExecuteChangeSet"
-    Targets:
-      - Arn: !GetAtt SendEmailLambda.Arn
-        Id: "SendEmailLambdaTarget"
+    Type: "AWS::Events::Rule"
+    Properties:
+      EventPattern:
+        source:
+          - "aws.cloudformation"
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - "cloudformation.amazonaws.com"
+          eventName:
+            - "ExecuteChangeSet"
+      Targets:
+        - Arn: !GetAtt SendEmailLambda.Arn
+          Id: "SendEmailLambdaTarget"
 
   ## Lambda Function for sending user info
   SendEmailLambda:
@@ -255,25 +172,21 @@ Resources:
       Code:
         ZipFile: |
           import boto3
-          import os
 
           def handler(event, context):
               ssm = boto3.client('ssm')
               secrets_manager = boto3.client('secretsmanager')
 
-              # Retrieve user emails from SSM
               user1_email = ssm.get_parameter(Name='User1Email')['Parameter']['Value']
               user2_email = ssm.get_parameter(Name='User2Email')['Parameter']['Value']
 
-              # Retrieve password from Secrets Manager
               secret_value = secrets_manager.get_secret_value(SecretId='IAMUserSecret')
               password = eval(secret_value['SecretString'])['Password']
 
-              # Print user credentials (simulates sending an email)
-              print(f"User1 email: {user1_email}, Temporary Password: {password}")
-              print(f"User2 email: {user2_email}, Temporary Password: {password}")
+              print(f"User1: {user1_email}, Password: {password}")
+              print(f"User2: {user2_email}, Password: {password}")
 
-  ## Lambda execution role
+  ## Lambda Execution Role
   LambdaExecutionRole:
     Type: "AWS::IAM::Role"
     Properties:
