@@ -118,6 +118,16 @@ Resources:
         Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
         PasswordResetRequired: true
 
+  IAMUser1000:
+    Type: "AWS::IAM::User"
+    Properties:
+      UserName: "User1000"
+      Groups:
+        - Ref: "EC2GroupWithS3Access"
+      LoginProfile:
+        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
+        PasswordResetRequired: true
+
   ## Parameter Store for emails
   User1EmailParameter:
     Type: "AWS::SSM::Parameter"
