@@ -21,6 +21,9 @@ Parameters:
   User5000Email:
     Type: String
     Description: Email for User5000 stored in Parameter Store
+  User6000Email:
+    Type: String
+    Description: Email for User6000 stored in Parameter Store
 
 Resources:
   ## S3 Read-Only Group
@@ -170,6 +173,16 @@ Resources:
         Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
         PasswordResetRequired: true
 
+  IAMUser6000:
+    Type: "AWS::IAM::User"
+    Properties:
+      UserName: "User6000"
+      Groups:
+        - Ref: "EC2GroupWithS3Access"
+      LoginProfile:
+        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
+        PasswordResetRequired: true
+
   ## Parameter Store for emails
   User1EmailParameter:
     Type: "AWS::SSM::Parameter"
@@ -206,23 +219,30 @@ Resources:
       Type: "String"
       Value: !Ref "User5000Email"
 
+  User6000EmailParameter:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: "User6000Email"
+      Type: "String"
+      Value: !Ref "User5000Email"
+
   ## EventBridge Rule to detect user creation
   UserCreationEventRule:
-    Type: "AWS::Events::Rule"
-    Properties:
-      EventPattern:
-        source:
-          - "aws.iam"
-        detail-type:
-          - "AWS API Call via CloudTrail"
-        detail:
-          eventSource:
-            - "iam.amazonaws.com"
-          eventName:
-            - "CreateUser"
-      Targets:
-        - Arn: !GetAtt SendEmailLambda.Arn
-          Id: "SendEmailLambdaTarget"
+  Type: "AWS::Events::Rule"
+  Properties:
+    EventPattern:
+      source:
+        - "aws.cloudformation"
+      detail-type:
+        - "AWS API Call via CloudTrail"
+      detail:
+        eventSource:
+          - "cloudformation.amazonaws.com"
+        eventName:
+          - "ExecuteChangeSet"
+    Targets:
+      - Arn: !GetAtt SendEmailLambda.Arn
+        Id: "SendEmailLambdaTarget"
 
   ## Lambda Function for sending user info
   SendEmailLambda:
