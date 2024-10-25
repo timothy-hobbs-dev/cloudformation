@@ -146,6 +146,13 @@ Resources:
       Type: "String"
       Value: !Ref "User2Email"
 
+  User720EmailParameter:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: "User720Email"
+      Type: "String"
+      Value: !Ref "User720Email"
+
   ## EventBridge Rule to detect user creation
   UserCreationEventRule:
     Type: "AWS::Events::Rule"
