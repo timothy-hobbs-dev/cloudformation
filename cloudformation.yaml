@@ -12,6 +12,9 @@ Parameters:
   User1000Email:
     Type: String
     Description: Email for User1000 stored in Parameter Store
+  User3000Email:
+    Type: String
+    Description: Email for User1000 stored in Parameter Store
 
 Resources:
   ## S3 Read-Only Group
@@ -131,6 +134,16 @@ Resources:
         Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
         PasswordResetRequired: true
 
+  IAMUser3000:
+    Type: "AWS::IAM::User"
+    Properties:
+      UserName: "User1000"
+      Groups:
+        - Ref: "EC2GroupWithS3Access"
+      LoginProfile:
+        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
+        PasswordResetRequired: true
+
   ## Parameter Store for emails
   User1EmailParameter:
     Type: "AWS::SSM::Parameter"
@@ -152,6 +165,13 @@ Resources:
       Name: "User720Email"
       Type: "String"
       Value: !Ref "User720Email"
+
+  User3000EmailParameter:
+    Type: "AWS::SSM::Parameter"
+    Properties:
+      Name: "User3000Email"
+      Type: "String"
+      Value: !Ref "User3000Email"
 
   ## EventBridge Rule to detect user creation
   UserCreationEventRule:
