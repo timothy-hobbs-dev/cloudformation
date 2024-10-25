@@ -15,6 +15,9 @@ Parameters:
   User3000Email:
     Type: String
     Description: Email for User1000 stored in Parameter Store
+  User4000Email:
+    Type: String
+    Description: Email for User4000 stored in Parameter Store
 
 Resources:
   ## S3 Read-Only Group
@@ -138,6 +141,16 @@ Resources:
     Type: "AWS::IAM::User"
     Properties:
       UserName: "User3000"
+      Groups:
+        - Ref: "EC2GroupWithS3Access"
+      LoginProfile:
+        Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
+        PasswordResetRequired: true
+
+  IAMUser4000:
+    Type: "AWS::IAM::User"
+    Properties:
+      UserName: "User4000"
       Groups:
         - Ref: "EC2GroupWithS3Access"
       LoginProfile:
