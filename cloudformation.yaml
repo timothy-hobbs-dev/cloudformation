@@ -50,7 +50,7 @@ Resources:
         SecretStringTemplate: '{"Password":""}'
         GenerateStringKey: "Password"
         PasswordLength: 16
-        ExcludeCharacters: '"@/\\' # adjust as needed
+        ExcludeCharacters: '"@/\\'
 
   ## IAM User 1
   IAMUser1:
@@ -74,6 +74,7 @@ Resources:
         Password: !Sub "{{resolve:secretsmanager:${IAMUserSecret}::Password}}"
         PasswordResetRequired: true
 
+  ## IAM User 3
   IAMUser3:
     Type: "AWS::IAM::User"
     Properties:

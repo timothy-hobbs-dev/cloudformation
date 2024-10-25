@@ -1,5 +1,5 @@
 template-file-path: cloudformation.yaml
 parameters:
-  User2Email: test-email2@gmail.com
-  User1Email: test-email1@gmail.com
+  User2Email: testemail2@gmail.com
+  User1Email: testemail1@gmail.com
 tags: {}
